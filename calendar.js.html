@@ -1,0 +1,175 @@
+<script>
+/********************************************************************************
+* カレンダー表示関連 
+********************************************************************************/
+
+// 年月の指定
+var current = new Date();
+var year = current.getFullYear();
+var month = current.getMonth();
+
+// 翌月を取得しないといけない
+if(month == "11"){
+    // 12月の場合は翌年の1月
+    month = "1"
+    year++;
+}else{
+    // 12月以外は翌月
+    month += 2;
+}
+
+
+window.onload = function() {
+    // 従業員をスプレッドシートから取得して表示
+    google.script.run.withSuccessHandler(displayEmployee).getEmployee();
+    
+    // 年月を表示
+    document.getElementById('year-month').appendChild(displayYearMonth(year, month));
+    
+    // カレンダーを表示
+    document.getElementById('calendar').appendChild(generate_month_calendar(year, month));
+    
+    // 前回保存状態をリスト表示
+}
+
+/**
+ * 現在の年月を表示する
+ */
+function displayYearMonth (year, month) {
+    var h2 = document.createElement('h2');
+    h2.appendChild(document.createTextNode(year + '年　' + month + '月'));
+    return h2;
+}
+
+/**
+ * 指定した年月のカレンダー要素を生成して返す
+ * @param {number} year  - 年の指定
+ * @param {number} month - 月の指定
+ */
+function generate_month_calendar(year, month) {
+    var weekdayData = ['日', '月', '火', '水', '木', '金', '土'];
+    // カレンダーの情報を取得
+    var calendarData = get_month_calendar(year, month);
+
+    var i = calendarData[0]['weekday']; // 初日の曜日を取得
+    // カレンダー上の初日より前を埋める
+    while(i > 0) {
+        i--;
+        calendarData.unshift({
+            day: '',
+            weekday: i
+        });
+    }
+    var i = calendarData[calendarData.length - 1]['weekday']; // 末日の曜日を取得
+    // カレンダー上の末日より後を埋める
+    while(i < 6) {
+        i++;
+        calendarData.push({
+            day: '',
+            weekday: i
+        });
+    }
+
+    // カレンダーの要素を生成
+    var cTable = document.createElement('table');
+    cTable.className = 'calendar-table';
+    cTable.setAttribute('border', '3');
+    cTable.setAttribute('width', '900px');
+    cTable.setAttribute('height', '700px');
+
+    var insertData = '';
+//    insertData += '<form id="workData">';
+    // 曜日部分の生成
+    insertData += '<thead>';
+    insertData += '<tr>';
+    for (var i = 0; i < weekdayData.length; i++) {
+        if (weekdayData[i] == '土') {
+          insertData += '<th bgcolor="#8aabff">';
+        } else if (weekdayData[i] == '日') {
+          insertData += '<th bgcolor="#ffa4a4">';
+        } else {
+          insertData += '<th>';
+        }
+        insertData += weekdayData[i];
+        insertData += '</th>';
+    }
+    insertData += '</tr>';
+    insertData += '</thead>';
+
+    // 日付部分の生成
+    insertData += '<tbody>';
+    for (var i = 0; i < calendarData.length; i++) {
+        if(calendarData[i]['weekday'] <= 0) {
+            insertData += '<tr>';
+        }
+        insertData += '<td>';
+        insertData += calendarData[i]['day'];
+        insertData += '<br>';
+        if (calendarData[i]['day'] != "") {
+          // 空白セル以外にシフトを表示する
+          
+          insertData += '<span class="day">';
+          
+          // 10-15シフト
+          insertData += '<label for="choice' + calendarData[i]['day'] + '-1">';
+          insertData += '<input type="radio" name="' + calendarData[i]['day'] + '" id="choice' + calendarData[i]['day'] + '-1" value="10-15">10:00~15:00';
+          insertData += '</label>';
+          // 10-16シフト
+          insertData += '<label for="choice' + calendarData[i]['day'] + '-2">';
+          insertData += '<input type="radio" name="' + calendarData[i]['day'] + '" id="choice' + calendarData[i]['day'] + '-2" value="10-16">10:00~16:00';
+          insertData += '</label>';
+          // 10-18シフト
+          insertData += '<label for="choice' + calendarData[i]['day'] + '-3">';
+          insertData += '<input type="radio" name="' + calendarData[i]['day'] + '" id="choice' + calendarData[i]['day'] + '-3" value="10-18">10:00~18:00';
+          insertData += '</label>';
+
+          // 休み
+          insertData += '<label for="choice' + calendarData[i]['day'] + '-4">';
+          insertData += '<input type="radio" name="' + calendarData[i]['day'] + '" id="choice' + calendarData[i]['day'] + '-4" value="absent" checked="checked">休み';
+          insertData += '</label>';
+
+          insertData += '</span>';
+
+//          insertData += '<hr>';
+//          insertData += '<p class="storeName">GU 泉大津</p>';
+        }
+        insertData += '</td>';
+        if(calendarData[i]['weekday'] >= 6) {
+            insertData += '</tr>';
+        }
+    }
+    insertData += '</tbody>';
+//    insertData += '</form>';
+
+    cTable.innerHTML = insertData;
+    console.log(cTable);
+    return cTable;
+}
+
+/**
+ * 指定した年月のカレンダー情報を返す
+ * @param {number} year  - 年の指定
+ * @param {number} month - 月の指定
+ */
+function get_month_calendar(year, month) {
+    var firstDate = new Date(year, (month - 1), 1); // 指定した年月の初日の情報
+    var lastDay = new Date(year, (firstDate.getMonth() + 1), 0).getDate(); // 指定した年月の末日
+    var weekday = firstDate.getDay(); // 指定した年月の初日の曜日
+
+    var calendarData = []; // カレンダーの情報を格納
+    var weekdayCount = weekday; // 曜日のカウント用
+    for (var i = 0; i < lastDay; i++) {
+        calendarData[i] = {
+            day: i + 1,
+            weekday: weekdayCount
+        }
+        // 曜日のカウントが6(土曜日)まできたら0(日曜日)に戻す
+        if(weekdayCount >= 6) {
+            weekdayCount = 0;
+        } else {
+            weekdayCount++;
+        }
+    }
+    return calendarData;
+}
+</script>

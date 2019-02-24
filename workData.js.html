@@ -1,0 +1,79 @@
+<script>
+/********************************************************************************
+* シフトデータいじる関連 
+********************************************************************************/
+/**
+ * 従業員リストをシートから取得して表示する
+ */
+function displayEmployee(employees){
+  // selectタグ用
+  var select = document.createElement('select');
+  select.setAttribute('id', 'employee');
+  select.setAttribute('name', 'employeeName');
+
+  // optionタグ用
+  var insertData = '';
+  
+  // 従業員をプルダウンメニューにつっこむ
+  for (var i = 0; i < employees.length; i++) {
+    insertData += '<option value="' + employees[i] + '">' + employees[i] + '</option>';    
+  }
+  
+  select.innerHTML = insertData;
+  document.getElementById('employeeName').appendChild(select);
+}
+
+/**
+ * 入力したシフトデータをシートに書き込む&保存
+ */
+function setWorkData(){
+  var result = window.confirm('入力内容をスプレッドシートに送信します。\n');
+    if(result){
+    // スプレッドシートに書き込む
+    google.script.run.writeWorkData(document.getElementById("employee").value, getWorkTimeData());
+    // 入力情報を保存
+    saveRadioButtonStatus();
+  }
+}
+
+/**
+ * チェック状況を保存
+ */
+function saveRadioButtonStatus(){
+  // スプレッドシートに入力情報を保存する
+  google.script.run.saveStatusToSpreadSheet(document.getElementById("employee").value, getWorkTimeData());
+}
+
+/**
+ * 入力したシフトデータを受け取る
+ */
+function getWorkTimeData(){
+  // どの日のどの時間帯に出勤するか
+  var workTimeArray = [];
+
+  // 日付数の分だけ繰り返す  
+  for(var i = 0; i < document.getElementsByClassName("day").length; i++){
+    var dateIndex = i + 1;
+
+    //　ラジオボタンの数だけ判定を繰り返す（ボタンを表すインプットタグがあるので１引く）
+    for(var j=0; j < 4;j++){
+        // i番目のラジオボタンがチェックされているかを判定
+        
+        var radioButtonIndex = j + 1;
+        if(document.getElementById("choice" + dateIndex + "-" + radioButtonIndex).checked){ 
+            workTimeArray[i] = document.getElementById("choice" + dateIndex + "-" + radioButtonIndex).value;
+        }
+    }
+  }
+  
+  return workTimeArray;
+}
+/**
+ * スプレッドシートから保存状態を取得して表示
+ */
+function loadSavedStatus(){
+     // スプレッドシートから取ってくる
+     // 保存値を1ヶ月分配列にぶちこむ
+     // 配列をもとにラジオボタンを書き換える
+}
+</script>

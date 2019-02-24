@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+  <head>
+    <base target="_top">
+    <?!= HtmlService.createHtmlOutputFromFile('styles.css').getContent(); ?>
+    <?!= HtmlService.createHtmlOutputFromFile('calendar.js').getContent(); ?>
+    <?!= HtmlService.createHtmlOutputFromFile('workData.js').getContent(); ?>
+  </head>
+  <div class="header">
+    Work Time Manager
+  </div>
+  <div class="container">
+  <form id="workTimeDataForm">
+    <!-- 年月表示 -->
+    <div id="year-month"></div>   
+    
+    <!-- 従業員名 -->
+    <span id="employeeName"></span>
+    
+    <span class="buttonArea">
+       <!-- 読み込みボタン -->
+       <span id="loadButton"><a href="" onclick="loadSavedStatus(); return false;">以前の入力内容を読込（開発途中）</a></span> 
+    
+       <!-- 保存ボタン -->
+       <span id="saveButton"><a href="" onclick="saveRadioButtonStatus(); return false;">保存</a></span> 
+    
+       <!-- 送信ボタン -->
+       <span id="sendButton"><a href="" onclick="setWorkData(); return false;">送信＆保存</a></span> 
+    </span>
+    
+    <div class="sheetLink">
+       <a href="https://docs.google.com/spreadsheets/d/1l8-0uu0BzQBVdgQntZgVkVesjMUocO7WtvajEn2XuNY/edit#gid=673995123" target="_blank">スプレッドシートへ</a>
+    </div>
+
+    <div class="mainContents">
+      <!-- カレンダー -->
+      <div id="calendar"></div>
+    
+      <!-- 保存リスト -->
+      <div id="statusList">
+        <h3>以前の入力内容</h3>
+      </div>
+      
+    </div>
+  </form>
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
